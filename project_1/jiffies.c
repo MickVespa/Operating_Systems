@@ -9,13 +9,16 @@
 #include <linux/string.h>
 #include <linux/timer.h>
 
+#define BUFFER_SIZE 128
+#define PROC_NAME "jiffies"
+
 static int myInit(void);
 static void myExit(void);
 
 struct proc_dir_entry *my_proc;
 
 /* Read operation on proc */
-ssize_t read_data(struct file *fp, char *buf, size_t len, loff_t * off)
+ssize_t seq_read(struct file *fp, char *buf, size_t len, loff_t * off)
 {
 /* Logic to read data once */
 static int finished=0;
@@ -27,14 +30,13 @@ finished=1;
 
 /* find out current value of jiffies */
 
-sprintf(buf, "Value of jiffies %lu \n", jiffies);  
+sprintf(buf, "Value of jiffies %lu \n", jiffies);
 return strlen(buf);
 }
 
 /* File operation on proc */
-static struct file_operations fops = {
-.owner=THIS_MODULE,
-.read=read_data,
+static struct proc_ops my_fpos = {
+  .proc_read = seq_read,
 };
 
 /* Init of kernel module */
@@ -42,7 +44,7 @@ static int __init myInit(void)
 {
 
 /* Create proc file with name of jiffies */
-my_proc = proc_create("jiffies", 0666, NULL, &fops);
+my_proc = proc_create(PROC_NAME, 0666, NULL, &my_fpos);
 
 if(my_proc == NULL){
 printk(KERN_INFO "Error to create proc File\n");
@@ -61,6 +63,6 @@ return;
 module_init(myInit);
 module_exit(myExit);
 
-MODULE_LICENSE("Dual BSD/GPL");
-MODULE_AUTHOR(" Auther Name ");
-MODULE_DESCRIPTION(" Test Driver Module ");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("Jiffie Module");
+MODULE_AUTHOR("SSG");
