@@ -2,19 +2,20 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
+#include <linux/jiffies.h>
 #include <asm/uaccess.h>
 #include <asm/param.h>
+
 
 #define BUFFER_SIZE 128
 #define PROC_NAME "seconds"
 
-static unsigned long jiffie_start, jiffie_end ,time_elapsed;
+unsigned long jiffie_start, jiffie_end ,time_elapsed;
 
-ssize_t proc_read(struct file *file, char __user *usr_buf,size_t count, loff_t *pos);
+ssize_t seq_read(struct file *file, char __user *usr_buf,size_t count, loff_t *pos);
 
-static struct file_operations proc_ops ={
-  .owner = THIS_MODULE,
-  .read = proc_read,
+static struct proc_ops my_fpos = {
+  .proc_read = seq_read,
 };
 
 /* This function is called when the module is loaded. */
@@ -22,7 +23,7 @@ int proc_init(void)
 {
   /* creates the /proc/seconds entry */
   jiffie_start=jiffies;
-  proc_create(PROC_NAME, 0666, NULL, &proc_ops);
+  proc_create(PROC_NAME, 0666, NULL, &my_fpos);
   return 0;
 }
 
@@ -49,7 +50,7 @@ ssize_t proc_read(struct file *f, char  __user *usr_buf,size_t count, loff_t *po
   jiffie_end=jiffies;
   time_elapsed=jiffie_end-jiffie_start;
 
-  rv = sprintf(buffer, "TIME ELAPSED : %lu \n",time_elapsted/HZ);
+  rv = sprintf(buffer, "TIME ELAPSED : %lu \n",time_elapsed/HZ);
 
   /* copies kernel space buffer to user space usr_buf */
   if(copy_to_user(usr_buf, buffer, rv)){
