@@ -1,57 +1,70 @@
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/module.h>
+#include<linux/init.h>
+#include<linux/module.h>
+#include <linux/uaccess.h>
+#include<linux/fs.h>
+#include<linux/sched.h>
+#include<linux/device.h>
+#include<linux/slab.h>
 #include <linux/proc_fs.h>
-#include <asm/uaccess.h>
-#include <asm/param.h>
+#include <linux/string.h>
+#include <linux/timer.h>
 
-#define BUFFER_SIZE 128
-#define PROC_NAME "seconds"
+MODULE_LICENSE("Dual BSD/GPL");
+MODULE_AUTHOR(" Auther Name ");
+MODULE_DESCRIPTION(" Test Driver Module ");
 
-unsigned long js, je ,tet;
-ssize_t proc_read(struct file *file, char __user *usr_buf,size_t count, loff_t *pos);
-static struct file_operations proc_ops ={
-  .owner = THIS_MODULE,
-  .read = proc_read,
+static int myInit(void);
+static void myExit(void);
+
+struct proc_dir_entry *my_proc;
+
+unsigned long s_time, e_time;
+
+/*Read operation on proc*/
+ssize_t read_data(struct file *fp, char *buf, size_t len, loff_t * off)
+{
+/* Logic to read data once */
+static int finished=0;
+if(finished) {
+finished=0;
+return 0;
+}
+finished=1;
+
+/* find out current time in HZ*/
+e_time = jiffies/HZ;
+
+sprintf(buf, "Kernel Module is running : %lu seconds \n", e_time - s_time );  
+return strlen(buf);
+}
+
+/* File operation for Proc */
+static struct file_operations fops = {
+.owner=THIS_MODULE,
+.read=read_data,
 };
 
-/* This function is called when the module is loaded. */
-int proc_init(void){
-  js=jiffies;
-/* creates the /proc/seconds entry */
-  proc_create(PROC_NAME, 0666, NULL, &proc_ops);
-  return 0;
-}
-
-/* This function is called when the module is removed. */
-void proc_exit(void){
-
-/* removes the /proc/seconds entry */
-  remove_proc_entry(PROC_NAME, NULL);
-}
-
-/* This function is called each time /proc/seconds is read */
-ssize_t proc_read(struct file *file, char  __user *usr_buf,size_t count, loff_t *pos)
+static int __init myInit(void)
 {
-  int rv = 0;
-  char buffer[BUFFER_SIZE];
-  static int completed = 0;
-  if (completed)
-  {
-  completed = 0;
-  return 0;
-  }
-  completed = 1;
-  je=jiffies;
-  tet=je-js;
-  rv = sprintf(buffer, "TIME ELAPSED : %lu \n",tet/HZ);
+/* Find out time in Hz when kernel module initialize */
 
-/* copies kernel space buffer to user space usrbuf */
-  raw_copy_to_user(usr_buf, buffer, rv);
-  return rv;
+s_time = jiffies/HZ;
+my_proc = proc_create("seconds", 0666, NULL, &fops);
+
+if(my_proc == NULL){
+printk(KERN_INFO "Error to create proc File\n");
+return -1;
 }
-module_init(proc_init);
-module_exit(proc_exit);
-MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("SECONDS MODULE");
-MODULE_AUTHOR("SGG");
+
+return 0;
+}
+
+static void myExit(void)
+{
+/* remove proc file*/
+remove_proc_entry("seconds",NULL);
+return;
+}
+
+module_init(myInit);
+module_exit(myExit);
