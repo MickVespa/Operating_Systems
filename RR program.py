@@ -1,4 +1,9 @@
-#clock time == current_time
+#TODO   
+    #initalize list[][] (for loops to take user input)
+    #start time
+    #inital wait time
+    #remove processes from queue after comleted total_time
+    #clock time == current_time
 
 def round_robin():
     #initalizing variables 
@@ -75,6 +80,11 @@ def round_robin():
                 #factor in the context switch time into current time (atleast 2 remaining processes required)
                 if sum(completed) < process - 1:
                     current_time = current_time + context_switch
+                #account for the last contextswitch operation 
+                if sum(completed) == process:
+                    end_time[i] = end_time[i] + context_switch
+                    turnaround_time[i] = turnaround_time[i] + context_switch
+                    wait_time[i] = wait_time[i] + context_switch
 
 
     #print output
