@@ -75,6 +75,7 @@ def round_robin():
                 #factor in the context switch time into current time (atleast 2 remaining processes required)
                 if sum(completed) < process - 1:
                     current_time = current_time + context_switch
+                #special case for the last progress, need to acount for final context switch
                 if sum(completed) == process:
                     end_time[i] = end_time[i] + context_switch
                     turnaround_time[i] = turnaround_time[i] + context_switch
