@@ -11,6 +11,8 @@ def arival_time():
     arival_times = [0] * 100
     for i in range(1,99):
         arival_times[i] = arival_times[i-1] + inter_arival_times[i-1]
+    #last arival_time[] index was showing 0, this fixes that
+    arival_times[99] = arival_times[98] + inter_arival_times[98]
     print("the arrival times are: " + str(arival_times))
     
 def service_time():
