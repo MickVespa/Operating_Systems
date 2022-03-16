@@ -140,19 +140,7 @@ def round_robin():
                     #remove process from ready queue AND reset cycle to 0
                     ready_queue = [x for x in ready_queue if x != i]
                     cycle = 0
-
-                #factor in the context switch time into current time (atleast 2 remaining processes required)
-                #TODO Move to the front and change logic
-                #if sum(completed) < process - 1:
-                 #   current_time = current_time + context_switch
-                    
-                #special case for the last progress, need to acount for final context switch
-                #if sum(completed) == process:
-                 #   end_time[i] = end_time[i] + context_switch
-                  #  turnaround_time[i] = turnaround_time[i] + context_switch
-                   # wait_time[i] = wait_time[i] + context_switch
-
-            
+   
             #pass time if waiting for new process while ready queue is empty
             if len(ready_queue) == 0 and cycle > process:
                 current_time = current_time + 1
