@@ -17,18 +17,24 @@ def round_robin():
     
     #convert processes to "Pn" format
     for x in range(process):
-        process_tracking[x][0] = ("P"+str(x+1))
+        process_tracking[x][0] = x+1
     
     #generate inter_arival times randomly
     inter_arival_times = []
     for i in range(process - 1):
         x = (random.randrange(4, 10))
         inter_arival_times.append(x)
+    
+    print("the inter arival times are: " + str(inter_arival_times))    
+    print("\n")
 
     #calculate arival times for each process based on inter_arival times
     arival_times = [0] * process
     for i in range(1,process):
         arival_times[i] = arival_times[i-1] + inter_arival_times[i-1]
+    print("the arrival times are: " + str(arival_times))
+    print("\n")
+
     
     # Move calculated arival times into matrix tracker (process_tracking[][1])
     for x in range (process):
@@ -39,6 +45,8 @@ def round_robin():
     for i in range(process):
         x = (random.randrange(2,6))
         service_times.append(x)
+    print("The service times are: " + str(service_times))
+    print("\n")
 
     # Add generated service times (and remaining time) to matrix tracker (process_tracking[x][2AND3])
     for x in range (process):
@@ -46,6 +54,14 @@ def round_robin():
         process_tracking[x][3] = service_times[x]
         #also track total needed service time
         total_time = total_time + service_times[x]
+
+    #remove unnessisary lists from memory 
+    avg_inter = sum(inter_arival_times) / len(inter_arival_times)
+    avg_service = sum(service_times) / len(service_times)
+
+    del service_times
+    del inter_arival_times
+    del arival_times
         
 
     #user input for Quantum and Context Switch Time
@@ -62,14 +78,23 @@ def round_robin():
 
     # The structure of the list:
     #[Process Number, Arival Time, Service Time, Remaining Service Time, Completed]
-
+    cycle = 0 # used to track the loop through all processes 
+    cs = 0 # used to track changes in processes 
+    ready_queue = []
     #total_time = total service time from all processes
     while total_time != 0:
         #look at each process remaining time
         for i in range (process):        
             #verify the process has arrived and the process is NOT completed
             if process_tracking[i][1] <= current_time and process_tracking[i][4] != 1:
-
+                ready_queue.append(i)
+                
+                #Check if process has changed, account for Context switch
+                # LOOK AND DEBUGG
+                if i != cs:
+                    current_time = current_time + context_switch
+                    cs = i
+            
                 #less than quantum, but greater than 0
                 if process_tracking[i][3] <= quantum and process_tracking[i][3] >= 0:
                     #first time process runs, assign the start time and inital wait
@@ -112,16 +137,35 @@ def round_robin():
                     process_tracking[i][4] = 1
                     completed[i] = 1 
                     end_time[i] = current_time
+                    #remove process from ready queue AND reset cycle to 0
+                    ready_queue = [x for x in ready_queue if x != i]
+                    cycle = 0
 
                 #factor in the context switch time into current time (atleast 2 remaining processes required)
-                if sum(completed) < process - 1:
-                    current_time = current_time + context_switch
+                #TODO Move to the front and change logic
+                #if sum(completed) < process - 1:
+                 #   current_time = current_time + context_switch
                     
                 #special case for the last progress, need to acount for final context switch
-                if sum(completed) == process:
-                    end_time[i] = end_time[i] + context_switch
-                    turnaround_time[i] = turnaround_time[i] + context_switch
-                    wait_time[i] = wait_time[i] + context_switch
+                #if sum(completed) == process:
+                 #   end_time[i] = end_time[i] + context_switch
+                  #  turnaround_time[i] = turnaround_time[i] + context_switch
+                   # wait_time[i] = wait_time[i] + context_switch
+
+            
+            #pass time if waiting for new process while ready queue is empty
+            if len(ready_queue) == 0 and cycle > process:
+                current_time = current_time + 1
+                cycle = 0
+            
+            cycle = cycle + 1
+
+    
+    # DISPLAY RESULTS
+
+    avg_turnAround = sum(turnaround_time) / len(turnaround_time)
+    avg_wait = sum(wait_time) / len(wait_time)
+    
 
     x = PrettyTable()
     x.field_names = ["Process ID", "Start Time", "End Time", "Inital Wait Time", "Total Wait Time", "TurnAround Time"]
@@ -129,5 +173,10 @@ def round_robin():
         x.add_row([process_tracking[i][0], start_time[i], end_time[i], inital_wait[i], wait_time[i], turnaround_time[i]])
      
     print(x)
+    print("\n")
+    print("Average Interarrival time: " + str(avg_inter) )
+    print("Average Service times " + str(avg_service))
+    print("Average Turnaround Time: " + str(avg_turnAround))
+    print("Average Total Wait Time: " + str(avg_wait))
 
 round_robin()
