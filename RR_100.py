@@ -60,6 +60,7 @@ def round_robin():
     avg_inter = sum(inter_arival_times) / len(inter_arival_times)
     avg_service = sum(service_times) / len(service_times)
 
+    #delete lists to save memory 
     del service_times
     del inter_arival_times
     del arival_times
@@ -86,19 +87,10 @@ def round_robin():
     
     while total_time != 0:
         #look at each process remaining time
-        for i in range (process):        
+        for i in range (process): 
             #verify the process has arrived and the process is NOT completed
             if process_tracking[i][1] <= current_time and process_tracking[i][4] != 1:
                 ready_queue.add(i)
-                
-                
-                #Check if process has changed and there are processes ready to switch, account for Context switch
-                #TODO FIX, adds time for every looped process, regardless if in ready queue or not!!!!!
-            
-                if i != cs and len(ready_queue) > 1:
-                    if i in ready_queue:
-                        current_time = current_time + context_switch
-                        cs = i
             
                 #less than quantum, but greater than 0
                 if process_tracking[i][3] <= quantum and process_tracking[i][3] >= 0:
@@ -145,16 +137,21 @@ def round_robin():
                     #remove process from ready queue AND reset cycle to 0
                     ready_queue.remove(i)
                     cycle = 0
-                    #account for context switch time when process is completed
+                    #add context switch time for removing process from running state
                     current_time = current_time + context_switch
+
             
             #pass time if waiting for new process while ready queue is empty
-            if len(ready_queue) == 0 and cycle > process:
+            if len(ready_queue) == 0 and cycle >= process:
                 current_time = current_time + 1
                 cycle = 0
             
             # prevent endless loop looking for ready processes
             cycle = cycle + 1
+            #if current process has completed quantum, and there are multiple processes in the ready list, switch process and apply CS time
+            if i in ready_queue and len(ready_queue) > 1:
+                current_time = current_time + context_switch
+            
 
     
     # DISPLAY RESULTS
