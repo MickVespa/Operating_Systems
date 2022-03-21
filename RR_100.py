@@ -93,10 +93,12 @@ def round_robin():
                 
                 
                 #Check if process has changed and there are processes ready to switch, account for Context switch
-                
+                #TODO FIX, adds time for every looped process, regardless if in ready queue or not!!!!!
+            
                 if i != cs and len(ready_queue) > 1:
-                    current_time = current_time + context_switch
-                    cs = i
+                    if i in ready_queue:
+                        current_time = current_time + context_switch
+                        cs = i
             
                 #less than quantum, but greater than 0
                 if process_tracking[i][3] <= quantum and process_tracking[i][3] >= 0:
