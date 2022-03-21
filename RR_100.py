@@ -1,4 +1,5 @@
 #clock time == current_time
+#total_time = total service time from all processes
 import random
 from prettytable import PrettyTable
 def round_robin():
@@ -78,20 +79,22 @@ def round_robin():
 
     # The structure of the list:
     #[Process Number, Arival Time, Service Time, Remaining Service Time, Completed]
+
     cycle = 0 # used to track the loop through all processes 
     cs = 0 # used to track changes in processes 
-    ready_queue = []
-    #total_time = total service time from all processes
+    ready_queue = set() # make ready queue a set to keep from adding duplicate IDs
+    
     while total_time != 0:
         #look at each process remaining time
         for i in range (process):        
             #verify the process has arrived and the process is NOT completed
             if process_tracking[i][1] <= current_time and process_tracking[i][4] != 1:
-                ready_queue.append(i)
+                ready_queue.add(i)
                 
-                #Check if process has changed, account for Context switch
-                # LOOK AND DEBUGG
-                if i != cs:
+                
+                #Check if process has changed and there are processes ready to switch, account for Context switch
+                
+                if i != cs and len(ready_queue) > 1:
                     current_time = current_time + context_switch
                     cs = i
             
@@ -138,14 +141,17 @@ def round_robin():
                     completed[i] = 1 
                     end_time[i] = current_time
                     #remove process from ready queue AND reset cycle to 0
-                    ready_queue = [x for x in ready_queue if x != i]
+                    ready_queue.remove(i)
                     cycle = 0
-   
+                    #account for context switch time when process is completed
+                    current_time = current_time + context_switch
+            
             #pass time if waiting for new process while ready queue is empty
             if len(ready_queue) == 0 and cycle > process:
                 current_time = current_time + 1
                 cycle = 0
             
+            # prevent endless loop looking for ready processes
             cycle = cycle + 1
 
     
