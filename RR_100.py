@@ -3,11 +3,11 @@
 import random
 from prettytable import PrettyTable
 def round_robin():
+    ############################################## INITALIZE VARRIABLES #################################################
+    
     #user input for total processes
     process = int(input("total number of processes: "))
-    
-    #initalizing variables 
-    
+        
     # The structure of the list:
     #[Process Number, Arival Time, Service Time, Remaining Service Time, Completed]
     process_tracking = [ [0]*5 for i in range(process)]
@@ -82,8 +82,9 @@ def round_robin():
     #[Process Number, Arival Time, Service Time, Remaining Service Time, Completed]
 
     cycle = 0 # used to track the loop through all processes 
-    cs = 0 # used to track changes in processes 
     ready_queue = set() # make ready queue a set to keep from adding duplicate IDs
+
+    #################################################### TIME BEGINS ###############################################################
     
     while total_time != 0:
         #look at each process remaining time
@@ -152,9 +153,8 @@ def round_robin():
             if i in ready_queue and len(ready_queue) > 1:
                 current_time = current_time + context_switch
             
-
     
-    # DISPLAY RESULTS
+    ######################################################## DISPLAY RESULTS #######################################################################
 
     avg_turnAround = sum(turnaround_time) / len(turnaround_time)
     avg_wait = sum(wait_time) / len(wait_time)
