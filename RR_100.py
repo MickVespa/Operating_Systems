@@ -56,7 +56,7 @@ def round_robin():
         #also track total needed service time
         total_time = total_time + service_times[x]
 
-    #remove unnessisary lists from memory 
+    #Calculate average inter arival and service time
     avg_inter = sum(inter_arival_times) / len(inter_arival_times)
     avg_service = sum(service_times) / len(service_times)
 
