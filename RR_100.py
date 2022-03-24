@@ -56,14 +56,14 @@ def round_robin():
         #also track total needed service time
         total_time = total_time + service_times[x]
 
-    #Calculate average inter arival and service time
+    # Calculate average inter arrival and average service times
     avg_inter = sum(inter_arival_times) / len(inter_arival_times)
     avg_service = sum(service_times) / len(service_times)
 
     #delete lists to save memory 
-    del service_times
+    #del service_times
     del inter_arival_times
-    del arival_times
+    #del arival_times
         
 
     #user input for Quantum and Context Switch Time
@@ -161,9 +161,9 @@ def round_robin():
     
 
     x = PrettyTable()
-    x.field_names = ["Process ID", "Start Time", "End Time", "Inital Wait Time", "Total Wait Time", "TurnAround Time"]
+    x.field_names = ["Process ID", "Arival Time","Service Time", "Start Time", "End Time", "Inital Wait Time", "Total Wait Time", "TurnAround Time"]
     for i in range(process):
-        x.add_row([process_tracking[i][0], start_time[i], end_time[i], inital_wait[i], wait_time[i], turnaround_time[i]])
+        x.add_row([process_tracking[i][0], arival_times[i], service_times[i], start_time[i], end_time[i], inital_wait[i], wait_time[i], turnaround_time[i]])
      
     print(x)
     print("\n")
